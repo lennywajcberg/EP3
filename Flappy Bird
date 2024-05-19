@@ -23,7 +23,16 @@ pos_y = 300
 velocidade_y = 0
 gravidade = 1
 pulo = -13
-
 def criar_jogador():
     play = pygame.draw.rect(tela, 'yellow', (pos_x, pos_y, 30, 30), 0, 10)
     return play
+
+# Relógio para controlar o FPS
+relogio = pygame.time.Clock()
+
+# Loop principal do jogo
+rodando = True
+while rodando:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
