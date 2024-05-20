@@ -1,11 +1,14 @@
+#OBS: linha atualizar posicao passaro
+
 import pygame
 import random
+
 # Inicializar Pygame
 pygame.init()
-
 # Importando imagens 
 imagem_fundo = pygame.transform.scale(pygame.image.load('imagens/fundo_jogo.png'), size = (800,600))
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
+imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
 
 # Definições de cores
 BRANCO = (255, 255, 255)
@@ -18,13 +21,14 @@ tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Flappy Bird")
 FPS = 30
 inicio = False
+superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
 velocidade_y = 0
 gravidade = 1
 pulo = -13
-
 # Configurações dos canos
 distancia_canos = 400
 altura_canos = 200
@@ -32,6 +36,8 @@ velocidade_canos = 5
 canos = []
 cont_canos = 0
 
+# Pontuação
+pontuacao = 0
 fonte = pygame.font.Font(None, 36)
 
 # Botão de inicio
@@ -44,15 +50,11 @@ botao_y_direc = 0.04
 corb = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 cort = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 cor_bg = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
-
 # Funções
-
 def criar_cano():
     cano_x = LARGURA + distancia_canos * len(canos)
     cano_alt = random.randint(100, 400)
     canos.append([cano_x, cano_alt])
-
 def criar_tela():
     tela.blit(imagem_fundo, (0, 0))
     topo = pygame.draw.rect(tela, VERDE, [0, 0, LARGURA, 5])
@@ -61,23 +63,21 @@ def criar_tela():
 
 def criar_jogador():
     play = pygame.draw.rect(tela, 'yellow', (pos_x, pos_y, 30, 30), 0, 10)
+    tela.blit(imagem_player, (pos_x - 10, pos_y - 15))
     return play
 
 def criar_canos():
     for cano in canos:
         pygame.draw.rect(tela, 'dark green', (cano[0], 0, 70, cano[1]))
         pygame.draw.rect(tela, 'dark green', (cano[0], cano[1] + altura_canos, 70, ALTURA - cano[1] - altura_canos))
-
 def verificar_colisao():
     for cano in canos:
         if pos_x + 30 > cano[0] and pos_x < cano[0] + 70:
             if pos_y < cano[1] or pos_y + 30 > cano[1] + altura_canos:
                 return True
     return False
-
 def cria_tela_inicial():
     global botao_x, botao_y, texto_x, texto_y, corb, cort, cor_bg
-    tela.blit(tela, (0, 0))
     tela.blit(imagem_inicio, (0, 0))
     botao_start = pygame.draw.rect(tela, (*corb, 50), [botao_x, botao_y, 150, 50], 0, 10)
     tela.blit(fonte.render('Iniciar', True, (*cort, 50)), (texto_x, texto_y))
@@ -137,15 +137,41 @@ while rodando:
             if evento.type == pygame.MOUSEBUTTONDOWN and botao_start.collidepoint(evento.pos):
                 inicio = True
 
+    if not verificar_colisao:
+        # Atualizar posição do pássaro
+        velocidade_y += gravidade
+        pos_y += velocidade_y
+
+        # Atualizar posição dos canos
+        for cano in canos:
+            cano[0] -= velocidade_canos
+            if cano[0] < -70:
+                cano[0] = LARGURA + distancia_canos * (len(canos) - 1)
+                cano[1] = random.randint(100, 400)
+                pontuacao += 1
+                # Aumentando velocidade dos canos
+                cont_canos += 1
+                if velocidade_canos < 17:
+                    if cont_canos == 5:
+                        velocidade_canos += 1
+                        cont_canos = 0
+                        texto_aumento = True
+                        tempo_exibicao_texto = 60
+                if velocidade_canos == 17 and contx == 0:
+                    verifica_texto_max = True
+                    tempo_exibicao_texto_max = 120
+                    contx = 1
+
     if not verificar_colisao():
         # Criar novo cano
         criar_cano()
+        
 
         # Redesenhar tudo
         top, bot = criar_tela()
         criar_canos()
+        jogador = criar_jogador()
 
     pygame.display.update()
     relogio.tick(FPS)
-
 pygame.quit()
