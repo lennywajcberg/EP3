@@ -1,15 +1,12 @@
 #OBS: linha atualizar posicao passaro
-
 import pygame
 import random
-
 # Inicializar Pygame
 pygame.init()
 # Importando imagens 
 imagem_fundo = pygame.transform.scale(pygame.image.load('imagens/fundo_jogo.png'), size = (800,600))
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
 imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
-
 # Definições de cores
 BRANCO = (255, 255, 255)
 VERDE = (0, 255, 50)
@@ -22,7 +19,6 @@ pygame.display.set_caption("Flappy Bird")
 FPS = 30
 inicio = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -35,11 +31,9 @@ altura_canos = 200
 velocidade_canos = 5
 canos = []
 cont_canos = 0
-
 # Pontuação
 pontuacao = 0
 fonte = pygame.font.Font(None, 36)
-
 # Botão de inicio
 botao_x = 335
 botao_y = 490
@@ -60,12 +54,10 @@ def criar_tela():
     topo = pygame.draw.rect(tela, VERDE, [0, 0, LARGURA, 5])
     botom = pygame.draw.rect(tela, VERDE, [0, ALTURA - 5, LARGURA, 5])
     return topo, botom
-
 def criar_jogador():
     play = pygame.draw.rect(tela, 'yellow', (pos_x, pos_y, 30, 30), 0, 10)
     tela.blit(imagem_player, (pos_x - 10, pos_y - 15))
     return play
-
 def criar_canos():
     for cano in canos:
         pygame.draw.rect(tela, 'dark green', (cano[0], 0, 70, cano[1]))
@@ -76,6 +68,15 @@ def verificar_colisao():
             if pos_y < cano[1] or pos_y + 30 > cano[1] + altura_canos:
                 return True
     return False
+
+def verificar_colisao_chao(player, tops, bots):
+    coll = [False, False]
+    if player.colliderect(bots):
+        coll[0] = True
+    if player.colliderect(tops):
+        coll[1] = True
+    return coll
+
 def cria_tela_inicial():
     global botao_x, botao_y, texto_x, texto_y, corb, cort, cor_bg
     tela.blit(imagem_inicio, (0, 0))
@@ -128,6 +129,10 @@ while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
+        elif evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_SPACE:
+                velocidade_y = pulo
+
     # Adicionando tela de ínicio
     while not inicio:
         botao_start = cria_tela_inicial()
@@ -138,10 +143,10 @@ while rodando:
                 inicio = True
 
     if not verificar_colisao:
+    if not verificar_colisao():
         # Atualizar posição do pássaro
         velocidade_y += gravidade
         pos_y += velocidade_y
-
         # Atualizar posição dos canos
         for cano in canos:
             cano[0] -= velocidade_canos
@@ -161,17 +166,24 @@ while rodando:
                     verifica_texto_max = True
                     tempo_exibicao_texto_max = 120
                     contx = 1
-
     if not verificar_colisao():
         # Criar novo cano
         criar_cano()
-        
-
         # Redesenhar tudo
         top, bot = criar_tela()
         criar_canos()
         jogador = criar_jogador()
 
+    # Verificar colisões com o chão e teto
+    colidindo = verificar_colisao_chao(jogador, top, bot)
+    if (colidindo[0] and velocidade_y > 0):
+        velocidade_y = 0
+        pos_y -= gravidade
+    if (colidindo[1] and velocidade_y < 0):
+        velocidade_y = 0
+        pos_y += gravidade
+
     pygame.display.update()
     relogio.tick(FPS)
+
 pygame.quit()
