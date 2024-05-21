@@ -3,12 +3,12 @@ import pygame
 import random
 # Inicializar Pygame
 pygame.init()
-
 # Importando imagens 
 imagem_fundo = pygame.transform.scale(pygame.image.load('imagens/fundo_jogo.png'), size = (800,600))
 imagem_over = pygame.transform.scale(pygame.image.load('imagens/fundo_over.png'), size = (800,600))
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
 imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
+imagem_pause = pygame.transform.scale(pygame.image.load('imagens/fundo_pause.png'), size = (800,600))
 
 # Definições de cores
 BRANCO = (255, 255, 255)
@@ -20,10 +20,10 @@ LARGURA, ALTURA = 800, 600
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Flappy Bird")
 FPS = 30
+pause = False
 inicio = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
 cont_morte = 0
-
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -39,6 +39,8 @@ cont_canos = 0
 # Pontuação
 pontuacao = 0
 fonte = pygame.font.Font(None, 36)
+contx = 0
+
 # Botão de inicio
 botao_x = 335
 botao_y = 490
@@ -80,6 +82,18 @@ def verificar_colisao_chao(player, tops, bots):
     if player.colliderect(tops):
         coll[1] = True
     return coll
+
+def desenhar_pause():
+    tela.blit(imagem_pause, (0, 0))
+    pygame.draw.rect(tela, 'dark gray', [100, 330, 600, 50], 0, 10)
+    tela.blit(fonte.render('Aperte "esc" para retomar', True, 'black'), (220, 340))
+    botao_restart = pygame.draw.rect(tela, 'white', [100, 270, 280, 50], 0, 10)
+    tela.blit(fonte.render('Restart', True, 'black'), (200, 280))
+    botao_quitar = pygame.draw.rect(tela, 'white', [420, 270, 280, 50], 0, 10)
+    tela.blit(fonte.render('Quit', True, 'black'), (540, 280))
+    tela.blit(superficie, (0, 0))
+    return botao_restart, botao_quitar
+
 def cria_tela_inicial():
     global botao_x, botao_y, texto_x, texto_y, corb, cort, cor_bg
     tela.blit(imagem_inicio, (0, 0))
@@ -124,7 +138,6 @@ def atualizar_posicao_botao():
             corb = (random.randint(125, 255), random.randint(125, 255), random.randint(125, 255))
             cort = (random.randint(0, 125), random.randint(0, 125), random.randint(0, 125))
             cor_bg = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
 def cria_tela_over():
     global pontuacao
     tela.blit(imagem_over, (0, 0))
@@ -136,10 +149,8 @@ def cria_tela_over():
     tela.blit(fonte.render('Quit', True, 'white'), (540, 430))
     tela.blit(superficie, (0, 0))
     return btn_restart, btn_quitar
-
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
-
 # Loop principal do jogo
 rodando = True
 while rodando:
@@ -147,8 +158,14 @@ while rodando:
         if evento.type == pygame.QUIT:
             rodando = False
         elif evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                if pause:
+                    pause = False
+                else:
+                    pause = True
             if evento.key == pygame.K_SPACE:
                 velocidade_y = pulo
+
     # Adicionando tela de ínicio
     while not inicio:
         botao_start = cria_tela_inicial()
@@ -157,7 +174,9 @@ while rodando:
         for evento in pygame.event.get():
             if evento.type == pygame.MOUSEBUTTONDOWN and botao_start.collidepoint(evento.pos):
                 inicio = True
+
     if not verificar_colisao():
+    if not pause and not verificar_colisao():
         # Atualizar posição do pássaro
         velocidade_y += gravidade
         pos_y += velocidade_y
@@ -188,12 +207,15 @@ while rodando:
         criar_canos()
         jogador = criar_jogador()
 
+    # Desenhando tela de pause
+    if pause:
+        restart_b, quitar = desenhar_pause()
+
     # Verificar colisões e gerando tela de morte
     if verificar_colisao() and cont_morte == 0:
         btn_restart, btn_quitar = cria_tela_over()
         pygame.display.update()
         cont_morte = 1
-
     # Verificar colisões com o chão e teto
     colidindo = verificar_colisao_chao(jogador, top, bot)
     if (colidindo[0] and velocidade_y > 0):
