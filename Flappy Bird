@@ -3,10 +3,13 @@ import pygame
 import random
 # Inicializar Pygame
 pygame.init()
+
 # Importando imagens 
 imagem_fundo = pygame.transform.scale(pygame.image.load('imagens/fundo_jogo.png'), size = (800,600))
+imagem_over = pygame.transform.scale(pygame.image.load('imagens/fundo_over.png'), size = (800,600))
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
 imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
+
 # Definições de cores
 BRANCO = (255, 255, 255)
 VERDE = (0, 255, 50)
@@ -19,6 +22,8 @@ pygame.display.set_caption("Flappy Bird")
 FPS = 30
 inicio = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+cont_morte = 0
+
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -68,7 +73,6 @@ def verificar_colisao():
             if pos_y < cano[1] or pos_y + 30 > cano[1] + altura_canos:
                 return True
     return False
-
 def verificar_colisao_chao(player, tops, bots):
     coll = [False, False]
     if player.colliderect(bots):
@@ -76,7 +80,6 @@ def verificar_colisao_chao(player, tops, bots):
     if player.colliderect(tops):
         coll[1] = True
     return coll
-
 def cria_tela_inicial():
     global botao_x, botao_y, texto_x, texto_y, corb, cort, cor_bg
     tela.blit(imagem_inicio, (0, 0))
@@ -121,8 +124,22 @@ def atualizar_posicao_botao():
             corb = (random.randint(125, 255), random.randint(125, 255), random.randint(125, 255))
             cort = (random.randint(0, 125), random.randint(0, 125), random.randint(0, 125))
             cor_bg = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+def cria_tela_over():
+    global pontuacao
+    tela.blit(imagem_over, (0, 0))
+    pygame.draw.rect(tela, 'black', [100, 350, 600, 50], 0, 10)
+    tela.blit(fonte.render(f'VOCÊ PERDEU! | PONTUAÇÃO: {pontuacao}', True, 'red'), (200, 360))
+    btn_restart = pygame.draw.rect(tela, 'black', [100, 420, 280, 50], 0, 10)
+    tela.blit(fonte.render('Restart', True, 'white'), (200, 430))
+    btn_quitar = pygame.draw.rect(tela, 'black', [420, 420, 280, 50], 0, 10)
+    tela.blit(fonte.render('Quit', True, 'white'), (540, 430))
+    tela.blit(superficie, (0, 0))
+    return btn_restart, btn_quitar
+
 # Relógio para controlar o FPS
 relogio = pygame.time.Clock()
+
 # Loop principal do jogo
 rodando = True
 while rodando:
@@ -132,7 +149,6 @@ while rodando:
         elif evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_SPACE:
                 velocidade_y = pulo
-
     # Adicionando tela de ínicio
     while not inicio:
         botao_start = cria_tela_inicial()
@@ -141,8 +157,6 @@ while rodando:
         for evento in pygame.event.get():
             if evento.type == pygame.MOUSEBUTTONDOWN and botao_start.collidepoint(evento.pos):
                 inicio = True
-
-    if not verificar_colisao:
     if not verificar_colisao():
         # Atualizar posição do pássaro
         velocidade_y += gravidade
@@ -174,6 +188,12 @@ while rodando:
         criar_canos()
         jogador = criar_jogador()
 
+    # Verificar colisões e gerando tela de morte
+    if verificar_colisao() and cont_morte == 0:
+        btn_restart, btn_quitar = cria_tela_over()
+        pygame.display.update()
+        cont_morte = 1
+
     # Verificar colisões com o chão e teto
     colidindo = verificar_colisao_chao(jogador, top, bot)
     if (colidindo[0] and velocidade_y > 0):
@@ -182,8 +202,6 @@ while rodando:
     if (colidindo[1] and velocidade_y < 0):
         velocidade_y = 0
         pos_y += gravidade
-
     pygame.display.update()
     relogio.tick(FPS)
-
 pygame.quit()
