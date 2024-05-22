@@ -1,6 +1,8 @@
 #OBS: linha atualizar posicao passaro
+
 import pygame
 import random
+
 # Inicializar Pygame
 pygame.init()
 # Importando imagens 
@@ -24,7 +26,6 @@ inicio = False
 restart_cmd = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
 cont_morte = 0
-
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -174,7 +175,6 @@ while rodando:
                     restart_cmd = True
                 elif btn_quitar.collidepoint(evento.pos):
                     rodando = False
-
     # Adicionando tela de ínicio
     while not inicio:
         botao_start = cria_tela_inicial()
@@ -213,6 +213,11 @@ while rodando:
         top, bot = criar_tela()
         criar_canos()
         jogador = criar_jogador()
+        texto_pontuacao = fonte.render(f"Score: {pontuacao}", True, (0, 0, 0))
+        tela.blit(texto_pontuacao, (10, 10))
+        texto_velocidade = fonte.render(f"Velocidade: {velocidade_canos - 4}", True, (0, 0, 0))
+        tela.blit(texto_velocidade, (LARGURA - 200, 10))
+
     # Desenhando tela de pause
     if pause:
         restart_b, quitar = desenhar_pause()
@@ -230,7 +235,6 @@ while rodando:
     if (colidindo[1] and velocidade_y < 0):
         velocidade_y = 0
         pos_y += gravidade
-
     # Reiniciando para parâmetros iniciais em caso de botão restart
     if restart_cmd:
         pause = False
@@ -244,8 +248,6 @@ while rodando:
         pontuacao = 0
         contx = 0
         cont_morte = 0
-
     pygame.display.update()
     relogio.tick(FPS)
-
 pygame.quit()
