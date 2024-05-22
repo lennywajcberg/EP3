@@ -8,6 +8,25 @@ imagem_over = pygame.transform.scale(pygame.image.load('imagens/fundo_over.png')
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
 imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
 imagem_pause = pygame.transform.scale(pygame.image.load('imagens/fundo_pause.png'), size = (800,600))
+
+# Carrega os sons do jogo
+pygame.mixer.music.load('sons/jogo.mp3')
+pygame.mixer.music.set_volume(0.2)
+som_jogo = pygame.mixer.Sound('sons/jogo.mp3')
+som_jogo.set_volume(0.05)
+som_morte = pygame.mixer.Sound('sons/morto.mp3')
+som_morte.set_volume(0.5)
+som_transicao = pygame.mixer.Sound('sons/transicao.mp3')
+som_transicao.set_volume(0.3)
+som_inicio = pygame.mixer.Sound('sons/inicio.mp3')
+som_inicio.set_volume(0.01)
+som_asa = pygame.mixer.Sound('sons/asa.mp3')
+som_asa.set_volume(0.3)
+som_clique = pygame.mixer.Sound('sons/som_click.mp3')
+som_clique.set_volume(0.3)
+som_velo = pygame.mixer.Sound('sons/velocidade.mp3')
+som_velo.set_volume(0.3)
+
 # Definições de cores
 BRANCO = (255, 255, 255)
 VERDE = (0, 255, 50)
@@ -22,7 +41,10 @@ pause = False
 inicio = False
 restart_cmd = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+
+# Contador sons
 cont_morte = 0
+
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -43,7 +65,6 @@ tempo_exibicao_texto = 60
 verifica_texto_max = False
 tempo_exibicao_texto_max = 120
 contx = 0
-
 # Botão de inicio
 botao_x = 335
 botao_y = 490
@@ -160,31 +181,43 @@ while rodando:
             rodando = False
         elif evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_ESCAPE:
+                som_clique.play()
                 if pause:
                     pause = False
                 else:
                     pause = True
             if evento.key == pygame.K_SPACE:
+                som_asa.play()
                 velocidade_y = pulo
         elif evento.type == pygame.MOUSEBUTTONDOWN:
             if pause:
                 if restart_b.collidepoint(evento.pos):
                     restart_cmd = True
+                    som_clique.play()
                 elif quitar.collidepoint(evento.pos):
                     rodando = False
+                    som_clique.play()
             else:
                 if btn_restart.collidepoint(evento.pos):
                     restart_cmd = True
+                    som_clique.play()
                 elif btn_quitar.collidepoint(evento.pos):
                     rodando = False
+                    som_clique.play()
+
     # Adicionando tela de ínicio
     while not inicio:
+        som_inicio.play()
         botao_start = cria_tela_inicial()
         atualizar_posicao_botao()
         pygame.display.update()
         for evento in pygame.event.get():
             if evento.type == pygame.MOUSEBUTTONDOWN and botao_start.collidepoint(evento.pos):
                 inicio = True
+                som_inicio.stop()
+                som_clique.play()
+                som_jogo.play()
+
     if not pause and not verificar_colisao():
         # Atualizar posição do pássaro
         velocidade_y += gravidade
@@ -222,9 +255,10 @@ while rodando:
     # Desenhando tela de pause
     if pause:
         restart_b, quitar = desenhar_pause()
-    
+
     # Verificar colisões e gerando tela de morte
     if verificar_colisao() and cont_morte == 0:
+        som_morte.play()
         btn_restart, btn_quitar = cria_tela_over()
         pygame.display.update()
         cont_morte = 1
@@ -239,13 +273,13 @@ while rodando:
 
     # Mostrar texto de aumento de velocidade se necessário
     if texto_aumento:
+        som_velo.play()
         texto_aumento_velocidade = fonte.render("AUMENTANDO VELOCIDADE", True, VERMELHO)
         tela.blit(texto_aumento_velocidade, (LARGURA / 2 - texto_aumento_velocidade.get_width() / 2, ALTURA / 2 - texto_aumento_velocidade.get_height() / 2))
         pygame.display.update()
         tempo_exibicao_texto -= 1
         if tempo_exibicao_texto <= 0:
             texto_aumento = False
-
     # Mostrar texto de velocidade máxima se necessário
     if verifica_texto_max:
         tempo_exibicao_texto_max -= 1
@@ -255,7 +289,6 @@ while rodando:
             pygame.display.update()
             if tempo_exibicao_texto_max <= 0:
                 verifica_texto_max = False
-
     # Reiniciando para parâmetros iniciais em caso de botão restart
     if restart_cmd:
         pause = False
@@ -268,7 +301,11 @@ while rodando:
         cont_canos = 0
         pontuacao = 0
         contx = 0
+        tempo_exibicao_texto = 60
+        verifica_texto_max = False
+        tempo_exibicao_texto_max = 120
         cont_morte = 0
+
     pygame.display.update()
     relogio.tick(FPS)
 pygame.quit()
