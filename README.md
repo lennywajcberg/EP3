@@ -32,7 +32,7 @@ Para jogar "FlappyBird", siga estas instruções de instalação:
 4. Execute o arquivo principal para iniciar o jogo.
 
 ## Vídeo Demonstrativo
-[link do vídeo]
+https://www.youtube.com/watch?v=OO1cSFOgD_I
 
 ## Agradecimentos
 Agradecemos a todos os jogadores por embarcarem nesta aventura conosco. Boa sorte e divirtam-se!
