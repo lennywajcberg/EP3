@@ -1,5 +1,6 @@
 import pygame
 import random
+
 # Inicializar Pygame
 pygame.init()
 # Importando imagens 
@@ -8,7 +9,6 @@ imagem_over = pygame.transform.scale(pygame.image.load('imagens/fundo_over.png')
 imagem_inicio = pygame.transform.scale(pygame.image.load('imagens/fundo_inicio.png'), size = (800,600))
 imagem_player = pygame.transform.scale(pygame.image.load('imagens/player.png'), size = (60,60))
 imagem_pause = pygame.transform.scale(pygame.image.load('imagens/fundo_pause.png'), size = (800,600))
-
 # Carrega os sons do jogo
 pygame.mixer.music.load('sons/jogo.mp3')
 pygame.mixer.music.set_volume(0.2)
@@ -26,7 +26,6 @@ som_clique = pygame.mixer.Sound('sons/som_click.mp3')
 som_clique.set_volume(0.3)
 som_velo = pygame.mixer.Sound('sons/velocidade.mp3')
 som_velo.set_volume(0.3)
-
 # Definições de cores
 BRANCO = (255, 255, 255)
 VERDE = (0, 255, 50)
@@ -41,10 +40,8 @@ pause = False
 inicio = False
 restart_cmd = False
 superficie = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-
 # Contador sons
 cont_morte = 0
-
 # Configurações do pássaro
 pos_x = 50
 pos_y = 300
@@ -176,6 +173,7 @@ relogio = pygame.time.Clock()
 # Loop principal do jogo
 rodando = True
 while rodando:
+    # Identificando eventos de tecla e mouse
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
@@ -204,7 +202,6 @@ while rodando:
                 elif btn_quitar.collidepoint(evento.pos):
                     rodando = False
                     som_clique.play()
-
     # Adicionando tela de ínicio
     while not inicio:
         som_inicio.play()
@@ -217,7 +214,6 @@ while rodando:
                 som_inicio.stop()
                 som_clique.play()
                 som_jogo.play()
-
     if not pause and not verificar_colisao():
         # Atualizar posição do pássaro
         velocidade_y += gravidade
@@ -255,7 +251,7 @@ while rodando:
     # Desenhando tela de pause
     if pause:
         restart_b, quitar = desenhar_pause()
-
+    
     # Verificar colisões e gerando tela de morte
     if verificar_colisao() and cont_morte == 0:
         som_morte.play()
@@ -270,7 +266,6 @@ while rodando:
     if (colidindo[1] and velocidade_y < 0):
         velocidade_y = 0
         pos_y += gravidade
-
     # Mostrar texto de aumento de velocidade se necessário
     if texto_aumento:
         som_velo.play()
@@ -305,7 +300,8 @@ while rodando:
         verifica_texto_max = False
         tempo_exibicao_texto_max = 120
         cont_morte = 0
-
     pygame.display.update()
     relogio.tick(FPS)
+
+# Encerrando biblioteca
 pygame.quit()
