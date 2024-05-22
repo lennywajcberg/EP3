@@ -1,8 +1,5 @@
-#OBS: linha atualizar posicao passaro
-
 import pygame
 import random
-
 # Inicializar Pygame
 pygame.init()
 # Importando imagens 
@@ -41,7 +38,12 @@ cont_canos = 0
 # Pontuação
 pontuacao = 0
 fonte = pygame.font.Font(None, 36)
+texto_aumento = False
+tempo_exibicao_texto = 60
+verifica_texto_max = False
+tempo_exibicao_texto_max = 120
 contx = 0
+
 # Botão de inicio
 botao_x = 335
 botao_y = 490
@@ -217,7 +219,6 @@ while rodando:
         tela.blit(texto_pontuacao, (10, 10))
         texto_velocidade = fonte.render(f"Velocidade: {velocidade_canos - 4}", True, (0, 0, 0))
         tela.blit(texto_velocidade, (LARGURA - 200, 10))
-
     # Desenhando tela de pause
     if pause:
         restart_b, quitar = desenhar_pause()
@@ -235,6 +236,26 @@ while rodando:
     if (colidindo[1] and velocidade_y < 0):
         velocidade_y = 0
         pos_y += gravidade
+
+    # Mostrar texto de aumento de velocidade se necessário
+    if texto_aumento:
+        texto_aumento_velocidade = fonte.render("AUMENTANDO VELOCIDADE", True, VERMELHO)
+        tela.blit(texto_aumento_velocidade, (LARGURA / 2 - texto_aumento_velocidade.get_width() / 2, ALTURA / 2 - texto_aumento_velocidade.get_height() / 2))
+        pygame.display.update()
+        tempo_exibicao_texto -= 1
+        if tempo_exibicao_texto <= 0:
+            texto_aumento = False
+
+    # Mostrar texto de velocidade máxima se necessário
+    if verifica_texto_max:
+        tempo_exibicao_texto_max -= 1
+        if tempo_exibicao_texto_max <= 60:
+            texto_maximo = fonte.render(f"VELOCIDADE MÁXIMA ATINGIDA!!!", True, VERMELHO)
+            tela.blit(texto_maximo, (LARGURA / 2 - texto_aumento_velocidade.get_width() / 2, ALTURA / 2 - texto_aumento_velocidade.get_height() / 2))
+            pygame.display.update()
+            if tempo_exibicao_texto_max <= 0:
+                verifica_texto_max = False
+
     # Reiniciando para parâmetros iniciais em caso de botão restart
     if restart_cmd:
         pause = False
